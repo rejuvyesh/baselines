@@ -415,15 +415,19 @@ def build_train(make_obs_ph, q_func, num_actions, optimizer, grad_norm_clipping=
 
         if lookup_regularize > 0:
             interpolate_q = get_interpolate(lookup_table_loc)
-            tf_interpolate = tf.py_func(
-                interpolate_q, [tf.multiply(obs_t_input.get(), [10000, 10000, 100, 1, 100])],
-                tf.float32)
             print("----------------------Looking up-----------------------------")
             # look up table error
             if lookup_regularize_target:
+                tf_interpolate = tf.py_func(
+                    interpolate_q, [tf.multiply(obs_tp1_input.get(), [10000, 10000, 100, 1, 100])],
+                    tf.float32)
                 lookup_error = q_t_selected_target - tf_interpolate  # Or should it be q selected?
             else:
+                tf_interpolate = tf.py_func(
+                    interpolate_q, [tf.multiply(obs_t_input.get(), [10000, 10000, 100, 1, 100])],
+                    tf.float32)
                 lookup_error = q_t_selected - tf_interpolate
+
             weighted_error += lookup_regularize * lookup_error
 
         # compute optimization op (potentially with gradient clipping)
